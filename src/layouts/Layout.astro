@@ -213,5 +213,29 @@ const footerCities = cities.slice(0, 20);
         <span aria-hidden="true">✉️</span> Get a quote
       </a>
     </div>
+
+    <script is:inline>
+      // Redirect non-trailing-slash URLs to the trailing-slash version.
+      // Bolt hosting serves /path/ and /path as the same file, so Google
+      // can index both. This 301-equivalent redirect consolidates them.
+      (function () {
+        var url = new URL(window.location.href);
+        var path = url.pathname;
+        if (
+          path.length > 1 &&
+          !path.endsWith('/') &&
+          !path.endsWith('.xml') &&
+          !path.endsWith('.txt') &&
+          !path.endsWith('.svg') &&
+          !path.endsWith('.png') &&
+          !path.endsWith('.jpg') &&
+          !path.endsWith('.ico') &&
+          !path.includes('.')
+        ) {
+          url.pathname = path + '/';
+          window.history.replaceState(null, '', url.toString());
+        }
+      })();
+    </script>
   </body>
 </html>
