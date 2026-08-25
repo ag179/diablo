@@ -1,0 +1,48 @@
+[build]
+  publish = "dist"
+  command = "npm run build"
+
+# Netlify Pretty URLs: redirect non-slash paths to their trailing-slash version
+# Astro's directory build format outputs /path/index.html, so both /path and /path/
+# serve the same file. These rules 301 the bare version so Google sees one URL.
+[[redirects]]
+  from = "/services"
+  to = "/services/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/locations"
+  to = "/locations/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/blog"
+  to = "/blog/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/contact"
+  to = "/contact/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/services/:service"
+  to = "/services/:service/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/locations/:city"
+  to = "/locations/:city/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/blog/:slug"
+  to = "/blog/:slug/"
+  status = 301
+  force = true

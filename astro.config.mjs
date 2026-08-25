@@ -6,6 +6,7 @@ export default defineConfig({
   site: 'https://diablovalleydrywall.com',
   integrations: [tailwind()],
   compressHTML: true,
+  trailingSlash: 'always',
   build: {
     // Emit /locations/walnut-creek/index.html so URLs work on any static host
     format: 'directory',
