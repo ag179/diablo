@@ -1,0 +1,29 @@
+---
+export interface Props {
+  faqs: { q: string; a: string }[];
+  heading?: string;
+}
+const { faqs, heading = 'Common questions' } = Astro.props;
+---
+
+<section class="mx-auto max-w-3xl px-4 py-16">
+  <h2 class="text-2xl font-bold tracking-tight text-brand-900 sm:text-3xl">{heading}</h2>
+  <div class="mt-8 divide-y divide-brand-100 border-y border-brand-100">
+    {
+      faqs.map((f) => (
+        <details class="group py-4">
+          <summary class="flex cursor-pointer list-none items-start justify-between gap-4 text-base font-semibold text-brand-900 marker:hidden">
+            <span>{f.q}</span>
+            <span
+              class="mt-0.5 shrink-0 text-accent-600 transition group-open:rotate-45"
+              aria-hidden="true"
+            >
+              +
+            </span>
+          </summary>
+          <p class="mt-3 text-sm leading-relaxed text-brand-700">{f.a}</p>
+        </details>
+      ))
+    }
+  </div>
+</section>

@@ -1,0 +1,131 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import { blogPosts, postBySlug, sortedPosts } from '../../data/blogs';
+import { articleSchema, breadcrumbSchema } from '../../lib/schema';
+import { formatDate } from '../../lib/utils';
+
+export function getStaticPaths() {
+  return blogPosts.map((p) => ({ params: { slug: p.slug } }));
+}
+
+const { slug } = Astro.params;
+const post = postBySlug(slug!)!;
+const related = sortedPosts()
+  .filter((p) => p.slug !== post.slug)
+  .slice(0, 3);
+
+const crumbs = [
+  { name: 'Home', path: '/' },
+  { name: 'Guides', path: '/blog/' },
+  { name: post.title, path: `/blog/${post.slug}/` },
+];
+---
+
+<Layout
+  title={post.metaTitle}
+  description={post.metaDescription}
+  canonical={`/blog/${post.slug}/`}
+  schemas={[articleSchema(post), breadcrumbSchema(crumbs)]}
+>
+  <article>
+    <header class="bg-brand-900">
+      <div class="mx-auto max-w-3xl px-4 py-14 lg:py-16">
+        <nav aria-label="Breadcrumb" class="text-xs text-brand-400">
+          <a href="/" class="hover:text-white">Home</a>
+          <span class="px-1.5">/</span>
+          <a href="/blog/" class="hover:text-white">Guides</a>
+        </nav>
+        <p class="mt-5 text-xs font-bold uppercase tracking-wider text-accent-400">
+          {post.category}
+        </p>
+        <h1 class="mt-2 text-3xl font-black leading-tight tracking-tight text-white sm:text-4xl">
+          {post.title}
+        </h1>
+        <p class="mt-5 text-lg leading-relaxed text-brand-200">{post.intro}</p>
+        <p class="mt-6 text-xs text-brand-400">
+          {formatDate(post.publishedDate)} · {post.readMinutes} min read
+        </p>
+      </div>
+    </header>
+
+    <div class="mx-auto max-w-3xl px-4 py-14">
+      <div class="post-body" set:html={post.content} />
+    </div>
+  </article>
+
+  <section class="border-t border-brand-100 bg-brand-50">
+    <div class="mx-auto max-w-4xl px-4 py-14">
+      <h2 class="text-xl font-bold tracking-tight text-brand-900">Keep reading</h2>
+      <div class="mt-6 grid gap-5 sm:grid-cols-3">
+        {
+          related.map((p) => (
+            <a
+              href={`/blog/${p.slug}/`}
+              class="group rounded-xl border border-brand-100 bg-white p-5 transition hover:border-accent-300 hover:shadow-md"
+            >
+              <p class="text-xs font-bold uppercase tracking-wider text-accent-600">{p.category}</p>
+              <p class="mt-2 font-bold leading-snug text-brand-900 group-hover:text-accent-700">
+                {p.title}
+              </p>
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <CtaBand />
+</Layout>
+
+<style is:global>
+  .post-body {
+    color: #2f4466;
+    line-height: 1.75;
+  }
+  .post-body h2 {
+    margin-top: 2.5rem;
+    margin-bottom: 0.75rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: #111d2e;
+  }
+  .post-body h3 {
+    margin-top: 1.75rem;
+    margin-bottom: 0.5rem;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #111d2e;
+  }
+  .post-body p {
+    margin-bottom: 1.1rem;
+  }
+  .post-body ul,
+  .post-body ol {
+    margin: 0 0 1.25rem 1.25rem;
+  }
+  .post-body ul {
+    list-style: disc;
+  }
+  .post-body ol {
+    list-style: decimal;
+  }
+  .post-body li {
+    margin-bottom: 0.5rem;
+    padding-left: 0.25rem;
+  }
+  .post-body a {
+    color: #ea5108;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .post-body a:hover {
+    color: #c23c09;
+  }
+  .post-body strong {
+    color: #111d2e;
+    font-weight: 700;
+  }
+</style>

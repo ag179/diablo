@@ -1,0 +1,152 @@
+---
+import { FORM_ENDPOINT, RESPONSE_PROMISE } from '../lib/utils';
+import { cities } from '../data/cities';
+import { services } from '../data/services';
+
+export interface Props {
+  /** Pre-selects the city dropdown on location pages. */
+  city?: string;
+  /** Pre-selects the service dropdown on service pages. */
+  service?: string;
+  compact?: boolean;
+  id?: string;
+}
+
+const { city = '', service = '', compact = false, id = 'quote' } = Astro.props;
+const configured = FORM_ENDPOINT.length > 0;
+---
+
+<form
+  id={id}
+  class="space-y-3"
+  action={configured ? FORM_ENDPOINT : undefined}
+  method={configured ? 'POST' : undefined}
+  data-configured={configured ? 'true' : 'false'}
+>
+  <div class={compact ? 'space-y-3' : 'grid gap-3 sm:grid-cols-2'}>
+    <div>
+      <label class="mb-1 block text-xs font-semibold text-brand-700" for={`${id}-name`}>Name</label>
+      <input
+        id={`${id}-name`}
+        name="name"
+        type="text"
+        required
+        autocomplete="name"
+        class="w-full rounded-lg border border-brand-200 px-3 py-2.5 text-sm outline-none transition focus:border-accent-500 focus:ring-2 focus:ring-accent-200"
+      />
+    </div>
+    <div>
+      <label class="mb-1 block text-xs font-semibold text-brand-700" for={`${id}-phone`}>Phone</label
+      >
+      <input
+        id={`${id}-phone`}
+        name="phone"
+        type="tel"
+        required
+        autocomplete="tel"
+        class="w-full rounded-lg border border-brand-200 px-3 py-2.5 text-sm outline-none transition focus:border-accent-500 focus:ring-2 focus:ring-accent-200"
+      />
+    </div>
+  </div>
+
+  <div>
+    <label class="mb-1 block text-xs font-semibold text-brand-700" for={`${id}-email`}>Email</label>
+    <input
+      id={`${id}-email`}
+      name="email"
+      type="email"
+      autocomplete="email"
+      class="w-full rounded-lg border border-brand-200 px-3 py-2.5 text-sm outline-none transition focus:border-accent-500 focus:ring-2 focus:ring-accent-200"
+    />
+  </div>
+
+  <div class={compact ? 'space-y-3' : 'grid gap-3 sm:grid-cols-2'}>
+    <div>
+      <label class="mb-1 block text-xs font-semibold text-brand-700" for={`${id}-city`}>City</label>
+      <select
+        id={`${id}-city`}
+        name="city"
+        class="w-full rounded-lg border border-brand-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-accent-500 focus:ring-2 focus:ring-accent-200"
+      >
+        <option value="">Select…</option>
+        {
+          cities.map((c) => (
+            <option value={c.name} selected={c.name === city}>
+              {c.name}
+            </option>
+          ))
+        }
+        <option value="Other">Somewhere else nearby</option>
+      </select>
+    </div>
+    <div>
+      <label class="mb-1 block text-xs font-semibold text-brand-700" for={`${id}-service`}
+        >What do you need?</label
+      >
+      <select
+        id={`${id}-service`}
+        name="service"
+        class="w-full rounded-lg border border-brand-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-accent-500 focus:ring-2 focus:ring-accent-200"
+      >
+        <option value="">Select…</option>
+        {
+          services.map((s) => (
+            <option value={s.name} selected={s.slug === service}>
+              {s.name}
+            </option>
+          ))
+        }
+        <option value="Not sure">Not sure yet</option>
+      </select>
+    </div>
+  </div>
+
+  <div>
+    <label class="mb-1 block text-xs font-semibold text-brand-700" for={`${id}-message`}
+      >Describe the damage</label
+    >
+    <textarea
+      id={`${id}-message`}
+      name="message"
+      rows={compact ? 2 : 3}
+      placeholder="e.g. brown ring on the living room ceiling under the upstairs bathroom"
+      class="w-full rounded-lg border border-brand-200 px-3 py-2.5 text-sm outline-none transition focus:border-accent-500 focus:ring-2 focus:ring-accent-200"
+    ></textarea>
+  </div>
+
+  <!-- Honeypot: bots fill this, humans never see it -->
+  <div class="hidden" aria-hidden="true">
+    <label for={`${id}-company`}>Company</label>
+    <input id={`${id}-company`} name="_gotcha" type="text" tabindex="-1" autocomplete="off" />
+  </div>
+
+  <button
+    type="submit"
+    class="w-full rounded-lg bg-accent-600 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-accent-700 focus:outline-none focus:ring-2 focus:ring-accent-400 focus:ring-offset-2"
+  >
+    Request my free quote
+  </button>
+
+  <p class="text-center text-xs text-brand-500">{RESPONSE_PROMISE} No obligation.</p>
+
+  <p
+    data-form-status
+    class="hidden rounded-lg bg-brand-50 px-4 py-3 text-center text-sm font-medium text-brand-800"
+  >
+  </p>
+</form>
+
+<script>
+  document.querySelectorAll('form[data-configured]').forEach((el) => {
+    const form = el as HTMLFormElement;
+    if (form.dataset.configured === 'true') return;
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const status = form.querySelector('[data-form-status]') as HTMLElement | null;
+      if (!status) return;
+      status.textContent =
+        'Form endpoint not configured yet — set FORM_ENDPOINT in src/lib/utils.ts before launch. Nothing was sent.';
+      status.classList.remove('hidden');
+    });
+  });
+</script>

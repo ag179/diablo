@@ -1,0 +1,223 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import QuoteForm from '../../components/QuoteForm.astro';
+import Faq from '../../components/Faq.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import { cities, cityBySlug } from '../../data/cities';
+import { services, serviceBySlug } from '../../data/services';
+import { globalFaqs } from '../../data/faqs';
+import { sortedPosts } from '../../data/blogs';
+import { localBusinessSchema, faqSchema, breadcrumbSchema } from '../../lib/schema';
+import { PHONE_DISPLAY, PHONE_HREF } from '../../lib/utils';
+
+export function getStaticPaths() {
+  return cities.map((c) => ({ params: { city: c.slug } }));
+}
+
+const { city: slug } = Astro.params;
+const city = cityBySlug(slug!)!;
+
+const offered = city.services
+  .map((s) => serviceBySlug(s.slug))
+  .filter((s): s is NonNullable<typeof s> => Boolean(s));
+
+const pageFaqs = [...city.faqs, ...globalFaqs.slice(0, 4)];
+const nearby = city.nearby
+  .map((n) => cityBySlug(n))
+  .filter((c): c is NonNullable<typeof c> => Boolean(c));
+const posts = sortedPosts().slice(0, 3);
+
+const crumbs = [
+  { name: 'Home', path: '/' },
+  { name: 'Service Areas', path: '/locations/' },
+  { name: city.name, path: `/locations/${city.slug}/` },
+];
+---
+
+<Layout
+  title={city.metaTitle}
+  description={city.metaDescription}
+  canonical={`/locations/${city.slug}/`}
+  schemas={[localBusinessSchema(city, offered), faqSchema(pageFaqs), breadcrumbSchema(crumbs)]}
+>
+  <!-- Hero -->
+  <section class="bg-brand-900">
+    <div class="mx-auto grid max-w-6xl gap-10 px-4 py-14 lg:grid-cols-5 lg:py-20">
+      <div class="lg:col-span-3">
+        <nav aria-label="Breadcrumb" class="text-xs text-brand-400">
+          <a href="/" class="hover:text-white">Home</a>
+          <span class="px-1.5">/</span>
+          <a href="/locations/" class="hover:text-white">Service Areas</a>
+          <span class="px-1.5">/</span>
+          <span class="text-brand-200">{city.name}</span>
+        </nav>
+
+        <h1 class="mt-5 text-3xl font-black leading-tight tracking-tight text-white sm:text-4xl">
+          {city.h1}
+        </h1>
+        <p class="mt-5 text-lg leading-relaxed text-brand-200">{city.intro}</p>
+        <p class="mt-4 leading-relaxed text-brand-300">{city.subIntro}</p>
+
+        <div class="mt-8 flex flex-wrap gap-3">
+          <a
+            href="#quote"
+            class="rounded-lg bg-accent-600 px-6 py-3.5 text-sm font-bold text-white shadow-lg transition hover:bg-accent-700"
+            >Get a free quote</a
+          >
+          <a
+            href={PHONE_HREF}
+            class="rounded-lg border border-brand-600 px-6 py-3.5 text-sm font-bold text-white transition hover:border-brand-400"
+            >Call {PHONE_DISPLAY}</a
+          >
+        </div>
+
+        <dl class="mt-8 grid max-w-md grid-cols-3 gap-4 border-t border-brand-800 pt-6 text-sm">
+          <div>
+            <dt class="text-xs uppercase tracking-wider text-brand-500">Population</dt>
+            <dd class="mt-1 font-bold text-white">{city.population}</dd>
+          </div>
+          <div>
+            <dt class="text-xs uppercase tracking-wider text-brand-500">ZIP codes</dt>
+            <dd class="mt-1 font-bold text-white">{city.zips.join(', ')}</dd>
+          </div>
+          <div>
+            <dt class="text-xs uppercase tracking-wider text-brand-500">Region</dt>
+            <dd class="mt-1 font-bold text-white">{city.region}</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="lg:col-span-2">
+        <div class="rounded-2xl bg-white p-5 shadow-2xl sm:p-6">
+          <p class="text-lg font-bold text-brand-900">Free quote in {city.name}</p>
+          <p class="mt-1 text-sm text-brand-600">
+            Describe the damage — photos help us give you a range straight away.
+          </p>
+          <div class="mt-5">
+            <QuoteForm id="quote" city={city.name} compact />
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Local detail -->
+  <section class="border-b border-brand-100 bg-brand-50">
+    <div class="mx-auto grid max-w-6xl gap-8 px-4 py-14 lg:grid-cols-3">
+      <div class="lg:col-span-2">
+        <h2 class="text-2xl font-bold tracking-tight text-brand-900">
+          What drywall work looks like in {city.name}
+        </h2>
+        <p class="mt-4 leading-relaxed text-brand-700">{city.localDetail}</p>
+        <p class="mt-4 rounded-lg border-l-4 border-accent-500 bg-white px-5 py-4 text-sm leading-relaxed text-brand-700">
+          <strong class="text-brand-900">Housing note:</strong>
+          {city.housingNote}
+        </p>
+      </div>
+      <div>
+        <h3 class="text-sm font-bold uppercase tracking-wider text-brand-900">
+          Neighborhoods we cover
+        </h3>
+        <ul class="mt-4 flex flex-wrap gap-2">
+          {
+            city.neighborhoods.map((n) => (
+              <li class="rounded-full border border-brand-200 bg-white px-3 py-1 text-xs font-medium text-brand-700">
+                {n}
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services in this city -->
+  <section class="mx-auto max-w-6xl px-4 py-16">
+    <h2 class="text-2xl font-bold tracking-tight text-brand-900 sm:text-3xl">
+      Drywall services in {city.name}, {city.state}
+    </h2>
+    <div class="mt-10 space-y-10">
+      {
+        city.services.map((s) => (
+          <article class="grid gap-6 border-t border-brand-100 pt-8 lg:grid-cols-3">
+            <div>
+              <h3 class="text-xl font-bold text-brand-900">{s.name}</h3>
+              <p class="mt-3 text-sm leading-relaxed text-brand-600">{s.intro}</p>
+              <a
+                href={`/services/${s.slug}/`}
+                class="mt-4 inline-block text-sm font-semibold text-accent-600 hover:text-accent-700"
+              >
+                More on {s.name.toLowerCase()} →
+              </a>
+            </div>
+            <ul class="grid gap-2.5 text-sm text-brand-700 lg:col-span-2 lg:grid-cols-2">
+              {s.bullets.map((b) => (
+                <li class="flex gap-2.5">
+                  <span class="mt-1 text-accent-500" aria-hidden="true">
+                    ▪
+                  </span>
+                  <span>{b}</span>
+                </li>
+              ))}
+            </ul>
+          </article>
+        ))
+      }
+    </div>
+
+    <p class="mt-10 text-sm text-brand-600">
+      Need something not listed? We also handle{' '}
+      {
+        services
+          .filter((s) => !city.services.some((cs) => cs.slug === s.slug))
+          .map((s, i, arr) => (
+            <>
+              <a class="font-medium text-accent-600 hover:text-accent-700" href={`/services/${s.slug}/`}>
+                {s.name.toLowerCase()}
+              </a>
+              {i < arr.length - 1 ? ', ' : ''}
+            </>
+          ))
+      } in {city.name}.
+    </p>
+  </section>
+
+  <Faq faqs={pageFaqs} heading={`Drywall questions from ${city.name} homeowners`} />
+
+  <!-- Nearby -->
+  <section class="border-t border-brand-100 bg-brand-50">
+    <div class="mx-auto max-w-6xl px-4 py-14">
+      <h2 class="text-xl font-bold tracking-tight text-brand-900">Nearby service areas</h2>
+      <div class="mt-6 flex flex-wrap gap-3">
+        {
+          nearby.map((n) => (
+            <a
+              href={`/locations/${n.slug}/`}
+              class="rounded-lg border border-brand-200 bg-white px-4 py-2.5 text-sm font-semibold text-brand-800 transition hover:border-accent-400 hover:text-accent-700"
+            >
+              {n.name}
+            </a>
+          ))
+        }
+      </div>
+
+      <h2 class="mt-12 text-xl font-bold tracking-tight text-brand-900">Useful guides</h2>
+      <ul class="mt-4 space-y-2 text-sm">
+        {
+          posts.map((p) => (
+            <li>
+              <a class="font-medium text-accent-600 hover:text-accent-700" href={`/blog/${p.slug}/`}>
+                {p.title}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <CtaBand
+    heading={`Drywall repair quotes in ${city.name}`}
+    sub="Send a photo and a short description — most quotes come back the same business day."
+  />
+</Layout>

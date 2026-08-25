@@ -1,0 +1,87 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import { cities, citiesByTier } from '../../data/cities';
+import { breadcrumbSchema, organizationSchema } from '../../lib/schema';
+import { REGION_LONG } from '../../lib/utils';
+
+const groups = [
+  {
+    tier: 1 as const,
+    title: 'Diablo Valley core',
+    blurb: 'Our home turf — same-week scheduling on most repairs.',
+  },
+  {
+    tier: 2 as const,
+    title: 'Satellite communities',
+    blurb: 'Smaller and unincorporated areas, plus the San Ramon Valley.',
+  },
+  {
+    tier: 3 as const,
+    title: 'Tri-Valley & East County',
+    blurb: 'Covered, usually scheduled as half or full-day blocks.',
+  },
+];
+
+const crumbs = [
+  { name: 'Home', path: '/' },
+  { name: 'Service Areas', path: '/locations/' },
+];
+---
+
+<Layout
+  title="Drywall Repair Service Areas | Contra Costa & Tri-Valley"
+  description={`Drywall and ceiling repair across ${cities.length} communities in ${REGION_LONG} — from Walnut Creek and Concord to Danville, San Ramon, Pleasanton and Brentwood.`}
+  canonical="/locations/"
+  schemas={[organizationSchema(), breadcrumbSchema(crumbs)]}
+>
+  <section class="bg-brand-900">
+    <div class="mx-auto max-w-6xl px-4 py-14 lg:py-20">
+      <nav aria-label="Breadcrumb" class="text-xs text-brand-400">
+        <a href="/" class="hover:text-white">Home</a>
+        <span class="px-1.5">/</span>
+        <span class="text-brand-200">Service Areas</span>
+      </nav>
+      <h1 class="mt-5 max-w-3xl text-3xl font-black leading-tight tracking-tight text-white sm:text-4xl">
+        Drywall repair across {cities.length} Contra Costa &amp; Tri-Valley communities
+      </h1>
+      <p class="mt-5 max-w-2xl text-lg leading-relaxed text-brand-200">
+        Every town in this valley has its own housing stock, and every housing stock fails in its
+        own way. Pick your city and we will tell you what we usually find there.
+      </p>
+    </div>
+  </section>
+
+  {
+    groups.map((g) => (
+      <section class="mx-auto max-w-6xl px-4 py-12">
+        <h2 class="text-2xl font-bold tracking-tight text-brand-900">{g.title}</h2>
+        <p class="mt-2 text-sm text-brand-600">{g.blurb}</p>
+        <div class="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {citiesByTier(g.tier).map((c) => (
+            <a
+              href={`/locations/${c.slug}/`}
+              class="group rounded-xl border border-brand-100 p-6 transition hover:border-accent-300 hover:shadow-lg"
+            >
+              <p class="text-lg font-bold text-brand-900 group-hover:text-accent-700">
+                {c.name}, {c.state}
+              </p>
+              <p class="mt-1 text-xs text-brand-500">
+                {c.county} · {c.zips.join(', ')}
+              </p>
+              <p class="mt-3 text-sm leading-relaxed text-brand-600">{c.housingNote}</p>
+              <p class="mt-4 text-sm font-semibold text-accent-600">
+                Drywall repair in {c.name} →
+              </p>
+            </a>
+          ))}
+        </div>
+      </section>
+    ))
+  }
+
+  <CtaBand
+    heading="Not sure if you are in our area?"
+    sub="If you are in Contra Costa County or the Tri-Valley, the answer is almost certainly yes. Ask us."
+  />
+</Layout>
