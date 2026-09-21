@@ -7,6 +7,8 @@ import { cities, cityBySlug } from '../../data/cities';
 import { services, serviceBySlug } from '../../data/services';
 import { globalFaqs } from '../../data/faqs';
 import { sortedPosts } from '../../data/blogs';
+import { businessesByCitySlug } from '../../data/businesses';
+import BusinessCard from '../../components/BusinessCard.astro';
 import { localBusinessSchema, faqSchema, breadcrumbSchema } from '../../lib/schema';
 import { PHONE_DISPLAY, PHONE_HREF } from '../../lib/utils';
 
@@ -26,6 +28,7 @@ const nearby = city.nearby
   .map((n) => cityBySlug(n))
   .filter((c): c is NonNullable<typeof c> => Boolean(c));
 const posts = sortedPosts().slice(0, 3);
+const directoryListings = businessesByCitySlug(city.slug).slice(0, 3);
 
 const crumbs = [
   { name: 'Home', path: '/' },
@@ -181,6 +184,32 @@ const crumbs = [
       } in {city.name}.
     </p>
   </section>
+
+  {
+    directoryListings.length > 0 && (
+      <section class="border-t border-brand-100 bg-brand-50">
+        <div class="mx-auto max-w-6xl px-4 py-14">
+          <h2 class="text-xl font-bold tracking-tight text-brand-900">
+            Other {city.name} businesses in our directory
+          </h2>
+          <p class="mt-2 max-w-2xl text-sm text-brand-600">
+            An independent listing of drywall and remodeling businesses we found on Google for{' '}
+            {city.name} — not a referral, and not vetted by us.
+          </p>
+          <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {directoryListings.map((b) => (
+              <BusinessCard business={b} />
+            ))}
+          </div>
+          <p class="mt-6 text-sm">
+            <a class="font-semibold text-accent-600 hover:text-accent-700" href="/directory/">
+              See the full business directory →
+            </a>
+          </p>
+        </div>
+      </section>
+    )
+  }
 
   <Faq faqs={pageFaqs} heading={`Drywall questions from ${city.name} homeowners`} />
 

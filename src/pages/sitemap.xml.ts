@@ -2,10 +2,11 @@ import type { APIRoute } from 'astro';
 import { cities } from '../data/cities';
 import { services } from '../data/services';
 import { blogPosts } from '../data/blogs';
+import { businesses } from '../data/businesses';
 import { SITE_URL } from '../lib/utils';
 
 /** Static build date. Bump when you make a substantive content update. */
-const LASTMOD = '2026-08-24';
+const LASTMOD = '2026-09-21';
 
 interface Entry {
   loc: string;
@@ -20,6 +21,7 @@ export const GET: APIRoute = () => {
     { loc: '/locations/', priority: '0.8', changefreq: 'monthly' },
     { loc: '/blog/', priority: '0.7', changefreq: 'weekly' },
     { loc: '/contact/', priority: '0.9', changefreq: 'monthly' },
+    { loc: '/directory/', priority: '0.7', changefreq: 'monthly' },
     ...services.map((s) => ({
       loc: `/services/${s.slug}/`,
       priority: '0.8',
@@ -33,6 +35,11 @@ export const GET: APIRoute = () => {
     ...blogPosts.map((p) => ({
       loc: `/blog/${p.slug}/`,
       priority: '0.6',
+      changefreq: 'monthly',
+    })),
+    ...businesses.map((b) => ({
+      loc: `/directory/${b.slug}/`,
+      priority: '0.4',
       changefreq: 'monthly',
     })),
   ];

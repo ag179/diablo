@@ -6,7 +6,7 @@ import {
   REGION_LONG,
   absoluteUrl,
 } from './utils';
-import type { City, Service, BlogPost } from '../types';
+import type { Business, City, Service, BlogPost } from '../types';
 
 const TELEPHONE = PHONE_DISPLAY.replace(/[^\d]/g, '').replace(/^/, '+1-');
 
@@ -80,6 +80,50 @@ export function faqSchema(faqs: { q: string; a: string }[]) {
       name: f.q,
       acceptedAnswer: { '@type': 'Answer', text: f.a },
     })),
+  };
+}
+
+/**
+ * LocalBusiness schema for a third-party directory listing. This describes
+ * the listed business itself, not Diablo Valley Drywall — it carries no
+ * `parentOrganization` link and no makesOffer tie to our services.
+ */
+export function directoryListingSchema(business: Business) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    '@id': absoluteUrl(`/directory/${business.slug}/#business`),
+    name: business.name,
+    url: business.website || undefined,
+    telephone: business.phone,
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: business.street ?? business.address,
+      addressLocality: business.city,
+      addressRegion: business.stateCode,
+      postalCode: business.postalCode,
+      addressCountry: 'US',
+    },
+    geo: { '@type': 'GeoCoordinates', latitude: business.latitude, longitude: business.longitude },
+    ...(business.rating !== null && business.reviews !== null && business.reviews > 0
+      ? {
+          aggregateRating: {
+            '@type': 'AggregateRating',
+            ratingValue: business.rating,
+            reviewCount: business.reviews,
+          },
+        }
+      : {}),
+    ...(business.hours.length > 0
+      ? {
+          openingHoursSpecification: business.hours.map((h) => ({
+            '@type': 'OpeningHoursSpecification',
+            dayOfWeek: `https://schema.org/${h.day}`,
+            opens: h.open24h ? '00:00' : h.open,
+            closes: h.open24h ? '23:59' : h.close,
+          })),
+        }
+      : {}),
   };
 }
 

@@ -1,0 +1,313 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import BusinessCard from '../../components/BusinessCard.astro';
+import { businesses, businessBySlug, businessesByCitySlug } from '../../data/businesses';
+import { cityBySlug } from '../../data/cities';
+import { TIER_META, formatClock, summarizeHours } from '../../lib/business';
+import { directoryListingSchema, breadcrumbSchema } from '../../lib/schema';
+import { pluralize } from '../../lib/utils';
+
+export function getStaticPaths() {
+  return businesses.map((b) => ({ params: { business: b.slug } }));
+}
+
+const { business: slug } = Astro.params;
+const business = businessBySlug(slug!)!;
+const meta = TIER_META[business.tier];
+const city = business.citySlug ? cityBySlug(business.citySlug) : null;
+
+const hoursSummary = summarizeHours(business.hours);
+
+const reviewSentence = (() => {
+  switch (business.reviewBucket) {
+    case 'unrated':
+      return 'It has no reviews on Google yet.';
+    case 'emerging':
+      return `It has a handful of Google reviews so far — ${business.reviews} at ${business.rating}★.`;
+    case 'established':
+      return `It carries a solid base of Google reviews — ${business.reviews} at ${business.rating}★.`;
+    case 'well-reviewed':
+      return `It's well reviewed on Google: ${business.reviews} reviews averaging ${business.rating}★.`;
+    case 'highly-reviewed':
+      return `It's one of the more heavily reviewed listings in this directory — ${business.reviews} Google reviews averaging ${business.rating}★.`;
+  }
+})();
+
+const otherSubtypes = business.subtypes.filter((s) => s !== business.displayType);
+
+/** Cosmetic only — the real, unmodified URL (tracking params included) stays in the href. */
+const websiteLabel = (() => {
+  try {
+    const u = new URL(decodeURIComponent(business.website));
+    return `${u.hostname}${u.pathname}`.replace(/\/$/, '');
+  } catch {
+    return business.website.replace(/^https?:\/\//, '').replace(/\/$/, '');
+  }
+})();
+
+const tierSentence: Record<typeof business.tier, string> = {
+  drywall_specialist: "Drywall contracting is this company's primary listed trade on Google.",
+  drywall_secondary:
+    "Its primary trade on Google is painting or handyman work; drywall repair is listed alongside it, not as the specialty.",
+  plaster_stucco:
+    'Plaster and stucco work is a closely related trade to drywall, with overlapping tools and finishing techniques.',
+  general_contractor:
+    'As a general contractor, drywall repair may be one of several services offered rather than a specialty — worth confirming directly before booking.',
+};
+
+const nearby = (business.citySlug ? businessesByCitySlug(business.citySlug) : [])
+  .filter((b) => b.slug !== business.slug)
+  .slice(0, 3);
+
+const crumbs = [
+  { name: 'Home', path: '/' },
+  { name: 'Business Directory', path: '/directory/' },
+  { name: business.name, path: `/directory/${business.slug}/` },
+];
+---
+
+<Layout
+  title={`${business.name} | ${business.city}, CA Drywall Directory`}
+  description={`${business.name} — ${meta.label.toLowerCase()} in ${business.city}, CA. ${business.rating !== null && business.reviews !== null ? `${business.rating}★ from ${business.reviews} Google ${pluralize(business.reviews, 'review')}.` : 'No Google reviews yet.'} Independent directory listing, not affiliated with Diablo Valley Drywall.`}
+  canonical={`/directory/${business.slug}/`}
+  schemas={[directoryListingSchema(business), breadcrumbSchema(crumbs)]}
+>
+  <section class="bg-brand-900">
+    <div class="mx-auto max-w-6xl px-4 py-14 lg:py-20">
+      <nav aria-label="Breadcrumb" class="text-xs text-brand-400">
+        <a href="/" class="hover:text-white">Home</a>
+        <span class="px-1.5">/</span>
+        <a href="/directory/" class="hover:text-white">Business Directory</a>
+        <span class="px-1.5">/</span>
+        <span class="text-brand-200">{business.name}</span>
+      </nav>
+
+      <h1 class="mt-5 max-w-3xl text-3xl font-black leading-tight tracking-tight text-white sm:text-4xl">
+        {business.name}
+      </h1>
+      <p class="mt-3 text-sm font-semibold uppercase tracking-wider text-accent-400">
+        {meta.label} · {business.city}, {business.stateCode}
+      </p>
+
+      <div class="mt-6 flex flex-wrap items-center gap-3 text-sm">
+        {
+          business.rating !== null && business.reviews !== null ? (
+            <span class="rounded-full bg-white/10 px-3 py-1.5 font-semibold text-white">
+              ★ {business.rating.toFixed(1)} ({business.reviews} Google {pluralize(business.reviews, 'review')})
+            </span>
+          ) : (
+            <span class="rounded-full bg-white/10 px-3 py-1.5 font-semibold text-brand-300">
+              No Google reviews yet
+            </span>
+          )
+        }
+        {
+          business.verified && (
+            <span class="rounded-full bg-white/10 px-3 py-1.5 font-semibold text-white">
+              ✓ Verified on Google
+            </span>
+          )
+        }
+      </div>
+
+      <div class="mt-8 flex flex-wrap gap-3">
+        <a
+          href={business.phoneHref}
+          class="rounded-lg bg-accent-600 px-6 py-3.5 text-sm font-bold text-white shadow-lg transition hover:bg-accent-700"
+          >Call {business.phone}</a
+        >
+        <a
+          href={business.website}
+          rel="nofollow noopener noreferrer"
+          target="_blank"
+          class="rounded-lg border border-brand-600 px-6 py-3.5 text-sm font-bold text-white transition hover:border-brand-400"
+          >Visit website ↗</a
+        >
+      </div>
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-4xl px-4 py-14">
+    <p class="text-lg leading-relaxed text-brand-700">
+      {business.name} is a {business.displayType.toLowerCase()} in {business.city}, CA{
+        business.county ? ` (${business.county})` : ''
+      }. {reviewSentence}
+      {hoursSummary && ` Open ${hoursSummary}.`}
+      {!hoursSummary && business.hours.length > 0 && ' Hours vary by day — see the schedule below.'}
+    </p>
+    <p class="mt-4 leading-relaxed text-brand-600">{tierSentence[business.tier]}</p>
+
+    {
+      business.sharedAddress && (
+        <p class="mt-4 rounded-lg border-l-4 border-accent-500 bg-brand-50 px-5 py-4 text-sm leading-relaxed text-brand-700">
+          <strong class="text-brand-900">Note:</strong> Google lists this business's registered
+          address as shared with several other companies in this directory. That is not
+          necessarily wrongdoing, but it is worth confirming who you're actually hiring before you
+          book.
+        </p>
+      )
+    }
+
+    <div class="mt-10 grid gap-8 border-t border-brand-100 pt-10 sm:grid-cols-2">
+      <div>
+        <h2 class="text-sm font-bold uppercase tracking-wider text-brand-900">At a glance</h2>
+        <dl class="mt-4 space-y-3 text-sm">
+          <div>
+            <dt class="text-brand-500">Address</dt>
+            <dd class="font-medium text-brand-800">{business.address}</dd>
+          </div>
+          <div>
+            <dt class="text-brand-500">Phone</dt>
+            <dd>
+              <a class="font-medium text-accent-600 hover:text-accent-700" href={business.phoneHref}>
+                {business.phone}
+              </a>
+            </dd>
+          </div>
+          <div>
+            <dt class="text-brand-500">Website</dt>
+            <dd>
+              <a
+                class="font-medium text-accent-600 hover:text-accent-700"
+                href={business.website}
+                rel="nofollow noopener noreferrer"
+                target="_blank"
+              >
+                {websiteLabel}
+              </a>
+            </dd>
+          </div>
+          <div>
+            <dt class="text-brand-500">On Google Maps</dt>
+            <dd>
+              <a
+                class="font-medium text-accent-600 hover:text-accent-700"
+                href={business.mapsUrl}
+                rel="nofollow noopener noreferrer"
+                target="_blank"
+              >
+                View listing ↗
+              </a>
+            </dd>
+          </div>
+        </dl>
+      </div>
+
+      <div>
+        <h2 class="text-sm font-bold uppercase tracking-wider text-brand-900">Listed categories</h2>
+        <ul class="mt-4 flex flex-wrap gap-2">
+          <li class="rounded-full border border-accent-300 bg-accent-50 px-3 py-1 text-xs font-semibold text-accent-700">
+            {business.displayType}
+          </li>
+          {
+            otherSubtypes.map((s) => (
+              <li class="rounded-full border border-brand-200 bg-white px-3 py-1 text-xs font-medium text-brand-700">
+                {s}
+              </li>
+            ))
+          }
+        </ul>
+
+        {
+          business.aboutAttributes.length > 0 && (
+            <>
+              <h2 class="mt-8 text-sm font-bold uppercase tracking-wider text-brand-900">
+                From their Google profile
+              </h2>
+              <ul class="mt-4 space-y-2 text-sm text-brand-700">
+                {business.aboutAttributes.map((a) => (
+                  <li class="flex gap-2.5">
+                    <span class="mt-1 text-accent-500" aria-hidden="true">
+                      ▪
+                    </span>
+                    <span>{a}</span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )
+        }
+      </div>
+    </div>
+
+    {
+      business.hours.length > 0 && (
+        <div class="mt-10 border-t border-brand-100 pt-10">
+          <h2 class="text-sm font-bold uppercase tracking-wider text-brand-900">Weekly hours</h2>
+          <table class="mt-4 w-full max-w-sm text-sm">
+            <tbody>
+              {business.hours.map((h) => (
+                <tr class="border-b border-brand-100">
+                  <td class="py-1.5 pr-4 font-medium text-brand-800">{h.day}</td>
+                  <td class="py-1.5 text-brand-600">
+                    {h.open24h ? 'Open 24 hours' : `${formatClock(h.open)}–${formatClock(h.close)}`}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )
+    }
+
+    {
+      business.reviews !== null && business.reviews > 0 && business.reviewsLink && (
+        <div class="mt-10 border-t border-brand-100 pt-10">
+          <a
+            class="text-sm font-semibold text-accent-600 hover:text-accent-700"
+            href={business.reviewsLink}
+            rel="nofollow noopener noreferrer"
+            target="_blank"
+          >
+            Read {business.name}'s Google reviews ↗
+          </a>
+        </div>
+      )
+    }
+  </section>
+
+  {
+    city && (
+      <section class="border-t border-brand-100 bg-brand-50">
+        <div class="mx-auto max-w-4xl px-4 py-14">
+          <h2 class="text-xl font-bold tracking-tight text-brand-900">
+            Looking for drywall repair in {city.name} specifically?
+          </h2>
+          <p class="mt-3 text-sm leading-relaxed text-brand-600">
+            We cover {city.name} directly — see what drywall work typically looks like there and
+            get a free quote.
+          </p>
+          <a
+            href={`/locations/${city.slug}/`}
+            class="mt-4 inline-block rounded-lg bg-accent-600 px-5 py-3 text-sm font-bold text-white shadow transition hover:bg-accent-700"
+          >
+            Drywall repair in {city.name} →
+          </a>
+        </div>
+      </section>
+    )
+  }
+
+  {
+    nearby.length > 0 && (
+      <section class="mx-auto max-w-6xl px-4 py-14">
+        <h2 class="text-xl font-bold tracking-tight text-brand-900">
+          Other listings in {business.city}
+        </h2>
+        <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {nearby.map((b) => (
+            <BusinessCard business={b} />
+          ))}
+        </div>
+        <p class="mt-6 text-sm">
+          <a class="font-semibold text-accent-600 hover:text-accent-700" href="/directory/">
+            See the full directory →
+          </a>
+        </p>
+      </section>
+    )
+  }
+
+  <CtaBand />
+</Layout>

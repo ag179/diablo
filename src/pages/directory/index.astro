@@ -1,0 +1,123 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import BusinessCard from '../../components/BusinessCard.astro';
+import { businesses, businessesByTier } from '../../data/businesses';
+import { TIER_META } from '../../lib/business';
+import { organizationSchema, breadcrumbSchema } from '../../lib/schema';
+import { REGION_LONG } from '../../lib/utils';
+import type { BusinessTier } from '../../types';
+
+const TIER_ORDER: BusinessTier[] = [
+  'drywall_specialist',
+  'drywall_secondary',
+  'plaster_stucco',
+  'general_contractor',
+];
+
+const groups = TIER_ORDER.map((tier) => ({
+  tier,
+  meta: TIER_META[tier],
+  list: businessesByTier(tier),
+}));
+
+/** General contractor tier is big enough (60+) to need city sub-headings. */
+function byCity(list: (typeof businesses)) {
+  const map = new Map<string, typeof list>();
+  for (const b of list) {
+    const key = b.city;
+    if (!map.has(key)) map.set(key, [] as typeof list);
+    map.get(key)!.push(b);
+  }
+  return [...map.entries()].sort((a, b) => b[1].length - a[1].length);
+}
+
+const rated = businesses.filter((b) => b.rating !== null);
+const avgRating = rated.length
+  ? (rated.reduce((sum, b) => sum + (b.rating ?? 0), 0) / rated.length).toFixed(1)
+  : null;
+
+const crumbs = [
+  { name: 'Home', path: '/' },
+  { name: 'Business Directory', path: '/directory/' },
+];
+---
+
+<Layout
+  title="Drywall & Remodeling Business Directory | Diablo Valley, CA"
+  description={`An independent directory of ${businesses.length} drywall, painting, plaster and general contracting businesses across ${REGION_LONG}, built from public Google Business Profile listings.`}
+  canonical="/directory/"
+  schemas={[organizationSchema(), breadcrumbSchema(crumbs)]}
+>
+  <section class="bg-brand-900">
+    <div class="mx-auto max-w-6xl px-4 py-14 lg:py-20">
+      <nav aria-label="Breadcrumb" class="text-xs text-brand-400">
+        <a href="/" class="hover:text-white">Home</a>
+        <span class="px-1.5">/</span>
+        <span class="text-brand-200">Business Directory</span>
+      </nav>
+      <h1 class="mt-5 max-w-3xl text-3xl font-black leading-tight tracking-tight text-white sm:text-4xl">
+        {businesses.length} drywall &amp; remodeling businesses across the Diablo Valley
+      </h1>
+      <p class="mt-5 max-w-2xl text-lg leading-relaxed text-brand-200">
+        An independent listing of drywall contractors, painters, plasterers and general
+        contractors we found on Google's local business database while researching this area.
+        We are not affiliated with any business below, have not vetted their work, and this is
+        not a referral network — it is public information, organized.
+      </p>
+      <dl class="mt-8 grid max-w-xl grid-cols-3 gap-4 border-t border-brand-800 pt-6 text-sm">
+        <div>
+          <dt class="text-xs uppercase tracking-wider text-brand-500">Listings</dt>
+          <dd class="mt-1 font-bold text-white">{businesses.length}</dd>
+        </div>
+        <div>
+          <dt class="text-xs uppercase tracking-wider text-brand-500">Drywall specialists</dt>
+          <dd class="mt-1 font-bold text-white">{businessesByTier('drywall_specialist').length}</dd>
+        </div>
+        <div>
+          <dt class="text-xs uppercase tracking-wider text-brand-500">Avg. Google rating</dt>
+          <dd class="mt-1 font-bold text-white">{avgRating ?? '—'} of those rated</dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  {
+    groups.map((g) => (
+      <section class="mx-auto max-w-6xl border-t border-brand-100 px-4 py-14">
+        <h2 class="text-2xl font-bold tracking-tight text-brand-900">
+          {g.list.length === 1 ? g.meta.label : g.meta.pluralLabel} ({g.list.length})
+        </h2>
+        <p class="mt-2 max-w-2xl text-sm text-brand-600">{g.meta.blurb}</p>
+
+        {g.tier === 'general_contractor' ? (
+          <div class="mt-8 space-y-10">
+            {byCity(g.list).map(([city, list]) => (
+              <div>
+                <h3 class="text-sm font-bold uppercase tracking-wider text-brand-800">
+                  {city} ({list.length})
+                </h3>
+                <div class="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                  {list.map((b) => (
+                    <BusinessCard business={b} />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div class="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {g.list.map((b) => (
+              <BusinessCard business={b} />
+            ))}
+          </div>
+        )}
+      </section>
+    ))
+  }
+
+  <CtaBand
+    heading="Comparing quotes? We're happy to be one of them."
+    sub="Diablo Valley Drywall specializes in drywall and ceiling repair — free written quotes, usually same-day."
+  />
+</Layout>

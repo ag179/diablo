@@ -1,0 +1,53 @@
+---
+import type { Business } from '../types';
+import { TIER_META } from '../lib/business';
+import { pluralize } from '../lib/utils';
+
+export interface Props {
+  business: Business;
+}
+
+const { business } = Astro.props;
+const meta = TIER_META[business.tier];
+const differentiator =
+  business.aboutAttributes[0] ??
+  business.subtypes.find((s) => s !== business.displayType) ??
+  null;
+---
+
+<a
+  href={`/directory/${business.slug}/`}
+  class="group flex flex-col rounded-xl border border-brand-100 p-5 transition hover:border-accent-300 hover:shadow-lg"
+>
+  <p class="text-base font-bold text-brand-900 group-hover:text-accent-700">{business.name}</p>
+  <p class="mt-1 text-xs text-brand-500">
+    {meta.shortLabel} · {business.city}, {business.stateCode}
+  </p>
+
+  <p class="mt-3 text-sm font-medium text-brand-700">
+    {
+      business.rating !== null && business.reviews !== null ? (
+        <>
+          <span class="text-accent-600" aria-hidden="true">★</span> {business.rating.toFixed(1)}{' '}
+          <span class="font-normal text-brand-500">
+            ({business.reviews} {pluralize(business.reviews, 'review')})
+          </span>
+        </>
+      ) : (
+        <span class="font-normal text-brand-500">No Google reviews yet</span>
+      )
+    }
+  </p>
+
+  {differentiator && <p class="mt-2 text-sm leading-relaxed text-brand-600">{differentiator}</p>}
+
+  {
+    business.sharedAddress && (
+      <p class="mt-3 text-xs text-brand-500">
+        Google lists this address as shared with other businesses in this directory.
+      </p>
+    )
+  }
+
+  <span class="mt-4 text-sm font-semibold text-accent-600">View listing →</span>
+</a>
