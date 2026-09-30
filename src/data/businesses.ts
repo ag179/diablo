@@ -1,6 +1,7 @@
 import type { Business, BusinessRecord } from '../types';
 import { toBusinessBase } from '../lib/business';
 import { cities } from './cities';
+import { contractorRecords } from './contractors';
 
 /* ---------------------------------------------------------------------------
  * 84 drywall-adjacent businesses pulled from the Supabase `drywall_leads`
@@ -22,7 +23,7 @@ import { cities } from './cities';
  *   on the derived Business type.
  * ------------------------------------------------------------------------- */
 
-const businessRecords: (BusinessRecord & { __citySlug: string | null })[] = [
+const baseRecords: (BusinessRecord & { __citySlug: string | null })[] = [
   {
     name: "A-1 Drywall",
     tier: "drywall_specialist",
@@ -2628,6 +2629,9 @@ const businessRecords: (BusinessRecord & { __citySlug: string | null })[] = [
     __citySlug: "alamo",
   },
 ];
+
+/* Base 84 drywall_leads rows + general contractors from contractors.ts (us_contractors). */
+const businessRecords = [...baseRecords, ...contractorRecords];
 
 export const businesses: Business[] = businessRecords.map((record) => {
   const { __citySlug, ...rest } = record;

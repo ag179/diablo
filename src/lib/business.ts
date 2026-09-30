@@ -191,7 +191,8 @@ export function toBusinessBase(record: BusinessRecord): Omit<Business, 'citySlug
     hours: parseHours(record.hoursRaw),
     aboutAttributes: readAboutAttributes(record.about),
     reviewBucket: reviewBucket(record.rating, record.reviews),
-    sharedAddress: record.dupNote === 'shared_virtual_office_address',
+    sharedAddress:
+      record.dupNote === 'shared_virtual_office_address' || record.dupNote === 'shared_address',
   };
 }
 

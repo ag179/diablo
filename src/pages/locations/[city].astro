@@ -28,7 +28,19 @@ const nearby = city.nearby
   .map((n) => cityBySlug(n))
   .filter((c): c is NonNullable<typeof c> => Boolean(c));
 const posts = sortedPosts().slice(0, 3);
-const directoryListings = businessesByCitySlug(city.slug).slice(0, 3);
+const TIER_RANK: Record<string, number> = {
+  drywall_specialist: 0,
+  plaster_stucco: 1,
+  drywall_secondary: 2,
+  general_contractor: 3,
+};
+const allCityListings = businessesByCitySlug(city.slug);
+const directoryListings = [...allCityListings]
+  .sort(
+    (a, b) =>
+      TIER_RANK[a.tier] - TIER_RANK[b.tier] || (b.reviews ?? 0) - (a.reviews ?? 0),
+  )
+  .slice(0, 6);
 
 const crumbs = [
   { name: 'Home', path: '/' },
@@ -203,7 +215,9 @@ const crumbs = [
           </div>
           <p class="mt-6 text-sm">
             <a class="font-semibold text-accent-600 hover:text-accent-700" href="/directory/">
-              See the full business directory →
+              {allCityListings.length > directoryListings.length
+                ? `See all ${allCityListings.length} ${city.name} businesses in the directory →`
+                : 'See the full business directory →'}
             </a>
           </p>
         </div>
