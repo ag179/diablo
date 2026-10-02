@@ -9,7 +9,7 @@ import { globalFaqs } from '../data/faqs';
 import { reviews } from '../data/reviews';
 import { sortedPosts } from '../data/blogs';
 import { organizationSchema, faqSchema } from '../lib/schema';
-import { PHONE_DISPLAY, PHONE_HREF, REGION_LONG } from '../lib/utils';
+import { REGION_LONG } from '../lib/utils';
 
 const tier1 = citiesByTier(1);
 const posts = sortedPosts().slice(0, 3);
@@ -61,11 +61,6 @@ const trust = [
             href="#quote"
             class="rounded-lg bg-accent-600 px-6 py-3.5 text-sm font-bold text-white shadow-lg transition hover:bg-accent-700"
             >Get a free quote</a
-          >
-          <a
-            href={PHONE_HREF}
-            class="rounded-lg border border-brand-600 px-6 py-3.5 text-sm font-bold text-white transition hover:border-brand-400"
-            >Call {PHONE_DISPLAY}</a
           >
         </div>
         <p class="mt-6 text-sm text-brand-400">

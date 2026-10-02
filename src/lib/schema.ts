@@ -1,14 +1,11 @@
 import {
   SITE_NAME,
   SITE_URL,
-  PHONE_DISPLAY,
   COMPANY_EMAIL,
   REGION_LONG,
   absoluteUrl,
 } from './utils';
 import type { Business, City, Service, BlogPost } from '../types';
-
-const TELEPHONE = PHONE_DISPLAY.replace(/[^\d]/g, '').replace(/^/, '+1-');
 
 export function organizationSchema() {
   return {
@@ -17,7 +14,6 @@ export function organizationSchema() {
     '@id': `${SITE_URL}/#organization`,
     name: SITE_NAME,
     url: SITE_URL,
-    telephone: TELEPHONE,
     email: COMPANY_EMAIL,
     description: `Drywall repair, ceiling repair and texture matching across ${REGION_LONG}.`,
     areaServed: {
@@ -35,7 +31,6 @@ export function localBusinessSchema(city: City, services: Service[]) {
     '@id': absoluteUrl(`/locations/${city.slug}/#business`),
     name: `${SITE_NAME} — ${city.name}`,
     url: absoluteUrl(`/locations/${city.slug}/`),
-    telephone: TELEPHONE,
     email: COMPANY_EMAIL,
     description: city.metaDescription,
     address: {

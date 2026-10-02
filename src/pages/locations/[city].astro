@@ -10,7 +10,6 @@ import { sortedPosts } from '../../data/blogs';
 import { businessesByCitySlug } from '../../data/businesses';
 import BusinessCard from '../../components/BusinessCard.astro';
 import { localBusinessSchema, faqSchema, breadcrumbSchema } from '../../lib/schema';
-import { PHONE_DISPLAY, PHONE_HREF } from '../../lib/utils';
 
 export function getStaticPaths() {
   return cities.map((c) => ({ params: { city: c.slug } }));
@@ -78,11 +77,6 @@ const crumbs = [
             href="#quote"
             class="rounded-lg bg-accent-600 px-6 py-3.5 text-sm font-bold text-white shadow-lg transition hover:bg-accent-700"
             >Get a free quote</a
-          >
-          <a
-            href={PHONE_HREF}
-            class="rounded-lg border border-brand-600 px-6 py-3.5 text-sm font-bold text-white transition hover:border-brand-400"
-            >Call {PHONE_DISPLAY}</a
           >
         </div>
 

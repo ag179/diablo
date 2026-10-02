@@ -12,17 +12,12 @@ export const SITE_SHORT = 'DV Drywall';
 export const SITE_URL = 'https://diablovalleydrywall.com';
 export const SITE_TAGLINE = 'Drywall & ceiling repair across the Diablo Valley';
 
-/** PLACEHOLDER — swap for your call-tracking number (CallRail / Twilio). */
-export const PHONE_DISPLAY = '(925) 555-0142';
-export const PHONE_HREF = 'tel:+19255550142';
-
 /** PLACEHOLDER — point at a real inbox you monitor. */
 export const COMPANY_EMAIL = 'quotes@diablovalleydrywall.com';
 
 /**
- * PLACEHOLDER — Formspree (or Basin / Zapier webhook) endpoint.
- * Sign up, create a form, paste the endpoint here. Until you do, the forms
- * fall back to a local "thanks" message and NOTHING IS DELIVERED.
+ * Formspree endpoint, e.g. "https://formspree.io/f/abcdwxyz". While this is
+ * empty the forms show a "not configured" notice and NOTHING IS DELIVERED.
  */
 export const FORM_ENDPOINT = '';
 

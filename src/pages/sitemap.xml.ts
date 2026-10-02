@@ -6,7 +6,7 @@ import { businesses } from '../data/businesses';
 import { SITE_URL } from '../lib/utils';
 
 /** Static build date. Bump when you make a substantive content update. */
-const LASTMOD = '2026-09-21';
+const LASTMOD = '2026-10-02';
 
 interface Entry {
   loc: string;

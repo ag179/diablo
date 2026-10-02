@@ -5,8 +5,6 @@ import { cities } from '../data/cities';
 import { globalFaqs } from '../data/faqs';
 import { organizationSchema, breadcrumbSchema, faqSchema } from '../lib/schema';
 import {
-  PHONE_DISPLAY,
-  PHONE_HREF,
   COMPANY_EMAIL,
   HOURS,
   RESPONSE_PROMISE,
@@ -55,9 +53,6 @@ const crumbs = [
       <div class="rounded-2xl bg-brand-50 p-6">
         <h2 class="text-sm font-bold uppercase tracking-wider text-brand-900">Reach us directly</h2>
         <p class="mt-4 text-sm text-brand-700">
-          <a class="text-lg font-bold text-brand-900 hover:text-accent-700" href={PHONE_HREF}
-            >{PHONE_DISPLAY}</a
-          ><br />
           <a class="hover:text-accent-700" href={`mailto:${COMPANY_EMAIL}`}>{COMPANY_EMAIL}</a>
         </p>
         <p class="mt-4 text-sm text-brand-600">{HOURS}</p>
