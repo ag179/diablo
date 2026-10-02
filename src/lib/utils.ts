@@ -19,7 +19,7 @@ export const COMPANY_EMAIL = 'quotes@diablovalleydrywall.com';
  * Formspree endpoint, e.g. "https://formspree.io/f/abcdwxyz". While this is
  * empty the forms show a "not configured" notice and NOTHING IS DELIVERED.
  */
-export const FORM_ENDPOINT = '';
+export const FORM_ENDPOINT = 'https://formspree.io/f/xljdyrjo';
 
 /**
  * PLACEHOLDER — the licensed contractor actually performing the work.
